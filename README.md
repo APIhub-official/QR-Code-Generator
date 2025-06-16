@@ -7,7 +7,6 @@ A simple and user-friendly **QR Code Generator** built using **HTML, CSS, and Ja
 - ✏️ Enter any text or URL to generate a QR code
 - 🔐 Requires an API key for secure access
 - 📸 Displays the QR code immediately after generation
-- 📥 Download the QR code as a `.png` image
 - 💬 Clear error messages for input validation
 - 🎨 Clean and responsive UI
 
