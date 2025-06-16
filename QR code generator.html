@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        input,
+        button {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #qrCodeImg {
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: white;
+            transition: transform 0.3s;
+        }
+
+        #qrCodeImg:hover {
+            transform: scale(1.05);
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>QR Code Generator</h1>
+
+        <input type="text" id="qrText" placeholder="Enter text or URL" value="https://example.com">
+
+        <input type="text" id="apiKey" placeholder="Enter your API key">
+
+        <button onclick="generateQR()">Generate QR Code</button>
+
+        <div id="error" class="error"></div>
+
+        <img id="qrCodeImg" src="" alt="Generated QR Code will appear here" style="display: none;">
+
+        <div id="downloadContainer" style="display: none;">
+            <button onclick="downloadQR()">Download QR Code</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQRUrl = '';
+
+        async function generateQR() {
+            const text = document.getElementById('qrText').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const errorElement = document.getElementById('error');
+            const qrImg = document.getElementById('qrCodeImg');
+            const downloadContainer = document.getElementById('downloadContainer');
+
+            errorElement.textContent = '';
+            qrImg.style.display = 'none';
+            downloadContainer.style.display = 'none';
+
+            if (!text) {
+                errorElement.textContent = 'Please enter some text or URL';
+                return;
+            }
+
+            if (!apiKey) {
+                errorElement.textContent = 'Please enter your API key';
+                return;
+            }
+
+            try {
+                // Encode the text for URL safety
+                const encodedText = encodeURIComponent(text);
+                const apiUrl = `https://api-hub-backend.onrender.com/api/v1/apicollection/qrcodegenerator?text=${encodedText}&apikey=${apiKey}`;
+
+                // Show loading state
+                qrImg.src = '';
+                qrImg.alt = 'Generating QR code...';
+                qrImg.style.display = 'block';
+
+                const response = await fetch(apiUrl, { method: "POST" });
+
+                if (!response.ok) {
+                    throw new Error('QR generation failed');
+                }
+
+                const qrBlob = await response.blob();
+                currentQRUrl = URL.createObjectURL(qrBlob);
+
+                qrImg.src = currentQRUrl;
+                qrImg.alt = `QR Code for: ${text}`;
+                downloadContainer.style.display = 'block';
+            } catch (err) {
+                errorElement.textContent = `Error: ${err.message}`;
+                console.error('QR Error:', err);
+            }
+        }
+
+        function downloadQR() {
+            if (!currentQRUrl) return;
+
+            const a = document.createElement('a');
+            a.href = currentQRUrl;
+            const text = document.getElementById('qrText').value.trim();
+            a.download = `qrcode-${text.substring(0, 20)}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+
+</html>
